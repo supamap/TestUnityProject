@@ -8,14 +8,18 @@ public class UnitScript : MonoBehaviour
     MouseManager manager;
 
     bool selected;
+    bool movable;
     SpriteRenderer childRenderer;
 
     Color unselectedColor = new Color(1f, 1f, 1f);
+    Color unmovableColor = new Color(0.5f, 0.5f, 0.5f);
     Color selectedColor = new Color(1f, 0.5f, 0.5f);
 
     public WorldTile currentWorldTile;
 
     float movementPoints;
+
+    public HashSet<Vector3Int> movableTiles;
 
 
 
@@ -26,40 +30,71 @@ public class UnitScript : MonoBehaviour
         Debug.Log(gameManager);
         manager = gameManager.GetComponent<MouseManager>();
         selected = false;
+        movable = true;
         childRenderer = GetComponentInChildren<SpriteRenderer>();
 
-        movementPoints = 2f;
+        movementPoints = 3f;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (selected)
+        {
+            childRenderer.color = selectedColor;
+        }
+        else
+        {
+            if (movable)
+            {
+                childRenderer.color = unselectedColor;
+            }
+            else
+            {
+                childRenderer.color = unmovableColor;
+            }
+        }
 
     }
 
     public void Select()
     {
         selected = true;
-        childRenderer.color = selectedColor;
     }
 
     public void Unselect()
     {
         selected = false;
-        childRenderer.color = unselectedColor;
     }
 
     public void MoveToTile(Vector3Int targetTile)
     {
-        WorldTile targetWorldTile = manager.worldTiles[targetTile];
+        if (movable) {
+            WorldTile targetWorldTile = manager.worldTiles[targetTile];
 
-        if (currentWorldTile != null)
-        {
-            currentWorldTile.SetUnit(null);
+            if (currentWorldTile != null)
+            {
+                currentWorldTile.SetUnit(null);
+            }
+            currentWorldTile = targetWorldTile;
+            transform.position = targetWorldTile.worldPosition;
+            targetWorldTile.SetUnit(this);
+
+            movable = false;
         }
-        currentWorldTile = targetWorldTile;
-        transform.position = targetWorldTile.worldPosition;
-        targetWorldTile.SetUnit(this);
+
 
     }
+
+    public void RefreshMovableTiles()
+    {
+        movableTiles = currentWorldTile.GetTilesWithinDistance(movementPoints);
+
+    }
+
+    public void NextTurn()
+    {
+        movable = true;
+    }
+
 }

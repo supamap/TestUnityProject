@@ -7,23 +7,24 @@ using UnityEngine.Tilemaps;
 
 public class WorldTile
 {
-    MouseManager manager;
+    MasterManager manager;
     public Vector3Int coordinates;
-    TileBase terrain;
+    Tile terrain;
     UnitScript unit;
     public Vector3 worldPosition;
     float movementCost;
     public List<Vector3Int> neighbors;
 
 
-    public WorldTile(MouseManager _manager, Vector3Int _coordinates)
+    public WorldTile(MasterManager _manager, Vector3Int _coordinates)
     {
         manager = _manager;
         coordinates = _coordinates;
-        terrain = manager.groundTilemap.GetTile(coordinates);
+        terrain = (Tile)manager.groundTilemap.GetTile(coordinates);
         worldPosition = manager.groundTilemap.CellToWorld(coordinates);
 
-        movementCost = 1;
+
+        movementCost = Parameters.terrainMovement[Parameters.terrainTiles[terrain]];
         
     }
 
@@ -95,7 +96,8 @@ public class WorldTile
                 if (!reached.Contains(n))
                 {
                     // calculate the distance to the n
-                    float n_dist = closest_dist + 1;
+                    float n_cost = manager.worldTiles[n].movementCost; 
+                    float n_dist = closest_dist + n_cost;
                     if ((dist[n] > n_dist) && (n_dist <= maxD))
                     {
                         toVisit.Add(n);
